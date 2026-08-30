@@ -1,6 +1,6 @@
-# crawl
+# Corpus Crawler
 
-`crawl` is a plugin-hosting file-processing runtime, not a domain-specific
+Corpus Crawler is a plugin-hosting file-processing runtime, not a domain-specific
 crawler. Its conceptual model is one line long:
 
 ```text

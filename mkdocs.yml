@@ -1,5 +1,5 @@
-site_name: crawl
-site_description: A modular high-throughput file-processing runtime
+site_name: Corpus Crawler
+site_description: Corpus Crawler is a modular high-throughput file-processing runtime
 repo_url: https://github.com/mattbriggs/corpus-crawler
 docs_dir: site
 site_dir: docs
