@@ -27,7 +27,7 @@ use crate::record::{RawRecord, RawValue, ScalarValue, ValidatedRecord};
 ///
 /// `datetime` (REQ-092, OQ-022) is deliberately absent: the SRS makes it
 /// optional and does not define its canonical lexical or CSV representation.
-/// See `docs/adr/0005-schema-type-system.md`.
+/// See `site/adr/0005-schema-type-system.md`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum FieldType {

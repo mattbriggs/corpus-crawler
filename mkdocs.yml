@@ -1,8 +1,8 @@
 site_name: crawl
 site_description: A modular high-throughput file-processing runtime
 repo_url: https://github.com/mattbriggs/corpus-crawler
-docs_dir: docs
-site_dir: site
+docs_dir: site
+site_dir: docs
 theme:
   name: material
   features: [navigation.sections, content.code.copy, navigation.top]

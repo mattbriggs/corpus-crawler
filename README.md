@@ -121,7 +121,7 @@ interpreter the host will actually execute, so it has to be one that can import
 your dependencies. If your plugin uses the SDK from a virtual environment, name
 that environment's interpreter explicitly.
 
-[Build your first plugin](docs/plugin-authoring/tutorial.md) walks through the
+[Build your first plugin](site/plugin-authoring/tutorial.md) walks through the
 whole process from an empty directory to a finished report.
 
 ## Development
@@ -162,13 +162,13 @@ Python SDK:
 | `crawl-infrastructure` | Filesystem, subprocess, registry, CSV, and logging adapters. |
 | `crawl-cli` | The composition root and command surface. |
 
-Full documentation lives in [`docs/`](docs/), including architecture,
+Full documentation lives in [`site/`](site/), including architecture,
 the failure model, the protocol reference, and the ADRs recording every
 resolved open question.
 
 ## Status
 
-See [`docs/implementation-status.md`](docs/implementation-status.md) for what is
+See [`site/implementation-status.md`](site/implementation-status.md) for what is
 built, what is verified, and what remains.
 
 ## License

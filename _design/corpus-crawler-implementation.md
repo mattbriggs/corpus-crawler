@@ -178,7 +178,7 @@ crawl/
 │   ├── protocol.rs
 │   └── pipeline.rs
 │
-└── docs/
+└── site/
     ├── mkdocs.yml
     ├── index.md
     ├── getting-started.md
@@ -554,7 +554,7 @@ For NFR-001/NFR-021, add a large synthetic crawl test or benchmark that records 
 | 15 | CLI | `crawl-cli/*` | REQ-030–035, 130–143 | CLI/system tests | command reference | clap | complete command surface works |
 | 16 | Acceptance suite | `tests/system/*` | AC-001–028 | 28+ acceptance tests | traceability matrix | fixture plugins | every AC has passing automated evidence |
 | 17 | NFR verification | benches/tests | NFR performance/reliability | load/RSS/throughput tests | performance guide | criterion/tools | bounded-memory behavior demonstrated |
-| 18 | Documentation | `docs/*` | public contracts | doc build/link checks | all categories | MkDocs Material | docs build without warnings |
+| 18 | Documentation | `site/*` | public contracts | doc build/link checks | all categories | MkDocs Material | docs build without warnings |
 | 19 | Release hardening | CI/release config | compatibility | full matrix | release notes | llvm-cov, pytest | all quality gates green |
 
 ### Required acceptance-test naming
