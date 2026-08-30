@@ -1,4 +1,9 @@
-# crawl
+# Corpus Crawler
+
+[![CI](https://github.com/mattbriggs/corpus-crawler/actions/workflows/ci.yml/badge.svg)](https://github.com/mattbriggs/corpus-crawler/actions/workflows/ci.yml)
+![Rust](https://img.shields.io/badge/Rust-1.85%2B-orange?logo=rust&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A modular, high-throughput file-processing runtime: a Rust host that owns
 traversal, concurrency, supervision, validation, and reporting, plus Python
