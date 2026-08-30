@@ -164,9 +164,6 @@ venv.bak/
 # Rope project settings
 .ropeproject
 
-# MkDocs build output
-/docs/
-
 # mypy
 .mypy_cache/
 .dmypy.json

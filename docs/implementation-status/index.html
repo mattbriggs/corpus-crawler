@@ -1,0 +1,1606 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A modular high-throughput file-processing runtime">
+      
+      
+      
+      
+        <link rel="prev" href="../operations/">
+      
+      
+        <link rel="next" href="../adr/0001-process-boundary/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Implementation status - crawl</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#implementation-status" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="crawl" class="md-header__button md-logo" aria-label="crawl" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            crawl
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Implementation status
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mattbriggs/corpus-crawler" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="crawl" class="md-nav__button md-logo" aria-label="crawl" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    crawl
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mattbriggs/corpus-crawler" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/failure-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plugin authoring
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plugin authoring
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugin-authoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugin-authoring/tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build your first plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugin-authoring/developing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developing a plugin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugin-authoring/manifest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manifest reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plugin-authoring/protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protocol reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../operations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation status
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation status
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contract-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contract verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reliability-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reliability verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-and-nfr-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance and NFR results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defects-this-work-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defects this work found
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#final-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Final status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Decisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/0001-process-boundary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 0001 Process boundary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/0002-jsonl-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 0002 JSONL protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/0003-streaming-output/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 0003 Streaming output
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/0004-open-question-decisions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 0004 Open questions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../adr/0005-schema-type-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR 0005 Schema types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contract-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contract verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reliability-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reliability verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-and-nfr-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance and NFR results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#defects-this-work-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defects this work found
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#known-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Known limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#final-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Final status
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="implementation-status">Implementation status</h1>
+<p><strong>Version:</strong> 0.1.0 · <strong>Date:</strong> 2026-08-29 · <strong>Rust:</strong> stable 1.97.1 (MSRV 1.85)
+· <strong>Python:</strong> 3.14 locally, 3.10–3.13 in CI (SDK requires ≥ 3.10)
+· <strong>Platform tested:</strong> macOS arm64 locally; Linux and macOS in CI</p>
+<h2 id="summary">Summary</h2>
+<p>All 19 phases of the implementation plan are complete. The full contract slice
+is built, verified, benchmarked, documented, and gated in CI:</p>
+<div class="highlight"><pre><span></span><code>plugin.yaml → manifest validation → streaming discovery → bounded scheduler
+  → persistent Python workers → JSONL → protocol validation
+  → schema validation → streaming CSV
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+<th>Target</th>
+<th style="text-align: center;"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rust tests passing</td>
+<td>226</td>
+<td>—</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Python tests passing</td>
+<td>65</td>
+<td>—</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>SRS acceptance criteria automated</td>
+<td>28 / 28</td>
+<td>100%</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Rust domain coverage</td>
+<td>97.82%</td>
+<td>≥ 95%</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Rust application coverage</td>
+<td>94.26%</td>
+<td>≥ 90%</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Rust protocol coverage</td>
+<td>95.79%</td>
+<td>≥ 95%</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Rust infrastructure coverage</td>
+<td>83.96%</td>
+<td>≥ 80%</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Overall Rust coverage</td>
+<td>92.77%</td>
+<td>≥ 85%</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td>Python SDK coverage</td>
+<td>95%</td>
+<td>≥ 95%</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td><code>clippy -D warnings</code>, <code>rustfmt</code>, <code>cargo doc -D warnings</code></td>
+<td>clean</td>
+<td>clean</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td><code>ruff</code>, <code>ruff format</code>, <code>mypy --strict</code></td>
+<td>clean</td>
+<td>clean</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td><code>mkdocs build --strict</code></td>
+<td>clean</td>
+<td>no warnings</td>
+<td style="text-align: center;">✅</td>
+</tr>
+</tbody>
+</table>
+<p>Rust coverage is measured with <code>cargo llvm-cov</code>; Python with
+<code>pytest --cov</code>. Both floors are enforced in CI.</p>
+<h2 id="phase-status">Phase status</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 Workspace and tooling</td>
+<td>PASS</td>
+<td>Clean build, lint, format across 5 crates and the Python package</td>
+</tr>
+<tr>
+<td>1 Domain primitives</td>
+<td>PASS</td>
+<td>92 tests; value objects self-validate at construction</td>
+</tr>
+<tr>
+<td>2 Manifest contract</td>
+<td>PASS</td>
+<td>Strict DTOs; a custom map visitor enforces VAL-020</td>
+</tr>
+<tr>
+<td>3 Python SDK</td>
+<td>PASS</td>
+<td>Pydantic v2 models, worker loop, 65 tests, 95% coverage</td>
+</tr>
+<tr>
+<td>4 Protocol</td>
+<td>PASS</td>
+<td>27 unit tests plus cross-language fixtures shared with Python</td>
+</tr>
+<tr>
+<td>5 Registry</td>
+<td>PASS</td>
+<td>Atomic JSON store; round-trip, corruption, and failure paths tested</td>
+</tr>
+<tr>
+<td>6 Plugin validation</td>
+<td>PASS</td>
+<td>Real handshake at install time; optional self-test executed</td>
+</tr>
+<tr>
+<td>7 Discovery</td>
+<td>PASS</td>
+<td>Streaming <code>ignore</code> walker; AC-004, AC-005</td>
+</tr>
+<tr>
+<td>8 Scheduler</td>
+<td>PASS</td>
+<td>Backpressure proven by AC-006 and by coordinator invariant tests</td>
+</tr>
+<tr>
+<td>9 Worker process</td>
+<td>PASS</td>
+<td>13 real-subprocess tests; persistent reuse proven by AC-007</td>
+</tr>
+<tr>
+<td>10 Supervision</td>
+<td>PASS</td>
+<td>Crash, timeout, replacement, retry bounds: AC-013, AC-014</td>
+</tr>
+<tr>
+<td>11 Schema validation</td>
+<td>PASS</td>
+<td>Exhaustive type/nullability/nesting tests; AC-012, AC-028</td>
+</tr>
+<tr>
+<td>12 CSV reporting</td>
+<td>PASS</td>
+<td>Temp-then-promote writer; AC-011, AC-021, AC-022</td>
+</tr>
+<tr>
+<td>13 Observability</td>
+<td>PASS</td>
+<td>20 event types, each emitted through the sink under test</td>
+</tr>
+<tr>
+<td>14 Failure policy</td>
+<td>PASS</td>
+<td>Fail-fast, threshold, cancellation: AC-018, AC-019, AC-020</td>
+</tr>
+<tr>
+<td>15 CLI</td>
+<td>PASS</td>
+<td>Complete command surface, six distinct exit codes</td>
+</tr>
+<tr>
+<td>16 Acceptance suite</td>
+<td>PASS</td>
+<td>30 tests named <code>ac_NNN_*</code>, covering all 28 criteria</td>
+</tr>
+<tr>
+<td>17 NFR verification</td>
+<td>PASS</td>
+<td>Criterion benchmarks plus a peak-RSS scaling test</td>
+</tr>
+<tr>
+<td>18 Documentation</td>
+<td>PASS</td>
+<td><code>mkdocs build --strict</code> and <code>cargo doc -D warnings</code> both clean</td>
+</tr>
+<tr>
+<td>19 Release hardening</td>
+<td>PASS</td>
+<td>Seven-job CI pipeline with coverage gates</td>
+</tr>
+</tbody>
+</table>
+<h2 id="contract-verification">Contract verification</h2>
+<table>
+<thead>
+<tr>
+<th>Contract</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Manifest</td>
+<td>PASS — strict parsing, all VAL-001…026 rules tested</td>
+</tr>
+<tr>
+<td>Rust ↔ Python JSONL</td>
+<td>PASS — shared fixtures consumed by both languages</td>
+</tr>
+<tr>
+<td>Protocol error handling</td>
+<td>PASS — 15 invalid-message fixtures classified identically</td>
+</tr>
+<tr>
+<td>Schema validation</td>
+<td>PASS — types, nullability, nesting, extra fields</td>
+</tr>
+<tr>
+<td>CSV serialization</td>
+<td>PASS — escaping verified by re-parsing the output</td>
+</tr>
+<tr>
+<td>Stdout protection</td>
+<td>PASS — a plugin's <code>print</code> cannot corrupt the stream</td>
+</tr>
+</tbody>
+</table>
+<h2 id="reliability-verification">Reliability verification</h2>
+<p>Worker crash recovery, timeout recovery and process kill, retry bounds, queue
+bounds, fail-fast, maximum-error shutdown, graceful cancellation, degraded
+pools, and failed replacements: all PASS, each with a named test.</p>
+<h2 id="performance-and-nfr-results">Performance and NFR results</h2>
+<p>Benchmarks (<code>cargo bench</code>, Apple M-series, release build):</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>encode_request</code></td>
+<td>55 ns</td>
+</tr>
+<tr>
+<td><code>decode_response</code> (0 rows)</td>
+<td>365 ns</td>
+</tr>
+<tr>
+<td><code>decode_response</code> (10 rows)</td>
+<td>6.3 µs</td>
+</tr>
+<tr>
+<td><code>decode_response</code> (100 rows)</td>
+<td>55 µs</td>
+</tr>
+<tr>
+<td><code>decode_response</code> (malformed)</td>
+<td>286 ns</td>
+</tr>
+<tr>
+<td><code>validate_record</code> (3 fields)</td>
+<td>174 ns</td>
+</tr>
+<tr>
+<td><code>validate_record</code> (30 fields)</td>
+<td>2.1 µs</td>
+</tr>
+<tr>
+<td><code>validate_record</code> (rejected)</td>
+<td>310 ns</td>
+</tr>
+</tbody>
+</table>
+<p>Rejection paths are as cheap as success paths, so a misbehaving plugin cannot
+turn validation into a bottleneck.</p>
+<p><strong>Bounded memory (NFR-001, NFR-021).</strong> <code>cargo test -p crawl-cli --test memory
+-- --ignored</code> runs identical crawls over corpora differing by 10×, at fixed
+worker and queue settings:</p>
+<table>
+<thead>
+<tr>
+<th>Corpus</th>
+<th>Peak RSS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2,000 files</td>
+<td>15.5 MB</td>
+</tr>
+<tr>
+<td>20,000 files</td>
+<td>15.6 MB</td>
+</tr>
+</tbody>
+</table>
+<p>A ten-fold increase in files produced a <strong>1.00×</strong> change in memory. Scheduler
+memory depends on queue capacity and worker count, not on corpus size.</p>
+<h2 id="continuous-integration">Continuous integration</h2>
+<p><code>.github/workflows/ci.yml</code> runs seven jobs: Rust on Linux and macOS
+(format, clippy, tests, rustdoc), Rust coverage with an 85% floor, Python on
+3.10/3.12/3.13 (ruff, mypy, pytest with a 95% floor), the cross-language
+contract suite, the strict docs build, the bounded-memory test, and a
+benchmark smoke run.</p>
+<h2 id="defects-this-work-found">Defects this work found</h2>
+<p>Three, all caught by tests written during hardening rather than by review:</p>
+<ol>
+<li><strong>Uncounted errors.</strong> <code>runtime_startup</code> and <code>report</code> errors did not consume
+   the error budget, so a crawl that lost every row, or that could not replace
+   a dead worker, reported <strong>success</strong> and exited <code>0</code>. Both now count.</li>
+<li><strong>Cross-language strictness divergence.</strong> The Python SDK accepted response
+   payloads the Rust host rejects — unconstrained ids and a defaulted <code>rows</code>
+   field. Found by the shared protocol fixtures.</li>
+<li><strong>Non-regular files dispatched.</strong> The walker reported symlinks, sockets, and
+   FIFOs as files. Only regular files are dispatched now, which also gave the
+   <code>follow_symlinks</code> policy a meaning it did not previously have.</li>
+</ol>
+<h2 id="open-questions">Open questions</h2>
+<p>Eleven of the 25 were decided because they shape observable contracts; see
+<a href="../adr/0004-open-question-decisions/">ADR 0004</a>. The remaining fourteen are
+untouched and stay isolated behind existing policy boundaries.</p>
+<h2 id="known-limitations">Known limitations</h2>
+<ol>
+<li><strong>Branch coverage is not measured.</strong> <code>cargo llvm-cov</code> reports region
+   coverage (91.85%) rather than true branch coverage, which needs a nightly
+   toolchain. The ≥ 90% branch target for policy code is therefore evidenced by
+   region coverage, not measured directly.</li>
+<li><strong>Windows is untested.</strong> Path handling uses Rust's abstractions throughout,
+   but the cancellation and memory tests are <code>#[cfg(unix)]</code> and CI covers only
+   Linux and macOS.</li>
+<li><strong><code>entries_examined</code> counts files, not all entries.</strong> The walker skips
+   directories before counting, so this statistic equals <code>files_discovered</code>.
+   REQ-046 asks for entries examined.</li>
+<li><strong>Benchmarks are not run against a regression baseline.</strong> CI proves they
+   still build and run; shared runners cannot produce stable enough timings to
+   gate on.</li>
+<li><strong>The <code>workers: auto</code> policy is documented, not tuned.</strong> NFR-006 asks for
+   benchmarks across SSD, spinning disk, and network storage. The
+   micro-benchmarks here measure per-message and per-row costs, not end-to-end
+   throughput on varied storage.</li>
+</ol>
+<h2 id="final-status">Final status</h2>
+<p><strong>READY.</strong></p>
+<p>No blocking items. The limitations above are scoped follow-on work, not gaps in
+the specified v1 contract.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "content.code.copy", "navigation.top"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
