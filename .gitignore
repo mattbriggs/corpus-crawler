@@ -216,3 +216,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+.DS_Store
+
+# MkDocs build output
+/site/
+
+# Criterion benchmark output
+/target/criterion/

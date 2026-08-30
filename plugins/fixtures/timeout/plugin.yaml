@@ -1,0 +1,22 @@
+api_version: "1"
+plugin:
+  name: fixture-timeout
+  version: "1.0.0"
+  description: Contract test fixture (timeout behaviour)
+runtime:
+  type: python
+  command: ["python3", "worker.py"]
+input:
+  extensions: [".txt"]
+output:
+  format: records
+  schema:
+    filename:
+      type: string
+      required: true
+    line:
+      type: integer
+      required: true
+    text:
+      type: string
+      required: false

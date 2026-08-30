@@ -1,0 +1,98 @@
+{
+  "protocol_version": "1",
+  "description": "Shared host-worker protocol fixtures. Both the Rust host and the Python SDK consume this file, so a divergence in either implementation fails a test rather than a production crawl.",
+  "requests": [
+    {
+      "name": "minimal_process_request",
+      "encoded": "{\"id\":42,\"filepath\":\"/data/a.txt\"}",
+      "decoded": { "id": 42, "op": "process", "filepath": "/data/a.txt" }
+    },
+    {
+      "name": "process_request_with_utf8_path",
+      "encoded": "{\"id\":7,\"filepath\":\"/data/ünïcode/文件.txt\"}",
+      "decoded": { "id": 7, "op": "process", "filepath": "/data/ünïcode/文件.txt" }
+    },
+    {
+      "name": "handshake_request",
+      "encoded": "{\"id\":0,\"op\":\"handshake\"}",
+      "decoded": { "id": 0, "op": "handshake", "filepath": null }
+    },
+    {
+      "name": "selftest_request",
+      "encoded": "{\"id\":1,\"op\":\"selftest\"}",
+      "decoded": { "id": 1, "op": "selftest", "filepath": null }
+    },
+    {
+      "name": "shutdown_request",
+      "encoded": "{\"id\":2,\"op\":\"shutdown\"}",
+      "decoded": { "id": 2, "op": "shutdown", "filepath": null }
+    }
+  ],
+  "valid_responses": [
+    {
+      "name": "ready",
+      "encoded": "{\"id\":0,\"status\":\"ready\",\"api_version\":\"1\"}",
+      "kind": "ready",
+      "id": 0
+    },
+    {
+      "name": "zero_rows",
+      "encoded": "{\"id\":1,\"status\":\"ok\",\"rows\":[]}",
+      "kind": "ok",
+      "id": 1,
+      "rows": []
+    },
+    {
+      "name": "single_row",
+      "encoded": "{\"id\":42,\"status\":\"ok\",\"rows\":[{\"filename\":\"/data/a.txt\",\"line\":7,\"entity\":\"Example\"}]}",
+      "kind": "ok",
+      "id": 42,
+      "rows": [{ "filename": "/data/a.txt", "line": 7, "entity": "Example" }]
+    },
+    {
+      "name": "multiple_rows",
+      "encoded": "{\"id\":3,\"status\":\"ok\",\"rows\":[{\"a\":1},{\"a\":2},{\"a\":3}]}",
+      "kind": "ok",
+      "id": 3,
+      "rows": [{ "a": 1 }, { "a": 2 }, { "a": 3 }]
+    },
+    {
+      "name": "all_scalar_types",
+      "encoded": "{\"id\":4,\"status\":\"ok\",\"rows\":[{\"s\":\"text\",\"i\":-9,\"n\":1.5,\"b\":true,\"z\":null}]}",
+      "kind": "ok",
+      "id": 4,
+      "rows": [{ "s": "text", "i": -9, "n": 1.5, "b": true, "z": null }]
+    },
+    {
+      "name": "utf8_row_values",
+      "encoded": "{\"id\":5,\"status\":\"ok\",\"rows\":[{\"path\":\"/data/文件.txt\"}]}",
+      "kind": "ok",
+      "id": 5,
+      "rows": [{ "path": "/data/文件.txt" }]
+    },
+    {
+      "name": "plugin_error",
+      "encoded": "{\"id\":6,\"status\":\"error\",\"error\":{\"code\":\"unreadable_file\",\"message\":\"permission denied\"}}",
+      "kind": "error",
+      "id": 6,
+      "error": { "code": "unreadable_file", "message": "permission denied" }
+    }
+  ],
+  "invalid_responses": [
+    { "name": "not_json", "encoded": "this is not json", "error": "malformed_json" },
+    { "name": "empty_line", "encoded": "", "error": "malformed_json" },
+    { "name": "truncated_json", "encoded": "{\"id\":1,\"status\":\"ok\"", "error": "malformed_json" },
+    { "name": "json_array", "encoded": "[1,2,3]", "error": "not_an_object" },
+    { "name": "json_scalar", "encoded": "42", "error": "not_an_object" },
+    { "name": "missing_id", "encoded": "{\"status\":\"ok\",\"rows\":[]}", "error": "missing_field" },
+    { "name": "missing_status", "encoded": "{\"id\":1,\"rows\":[]}", "error": "missing_field" },
+    { "name": "missing_rows", "encoded": "{\"id\":1,\"status\":\"ok\"}", "error": "missing_field" },
+    { "name": "missing_error_code", "encoded": "{\"id\":1,\"status\":\"error\",\"error\":{\"message\":\"x\"}}", "error": "missing_field" },
+    { "name": "string_id", "encoded": "{\"id\":\"1\",\"status\":\"ok\",\"rows\":[]}", "error": "invalid_field_type" },
+    { "name": "negative_id", "encoded": "{\"id\":-1,\"status\":\"ok\",\"rows\":[]}", "error": "invalid_field_type" },
+    { "name": "rows_not_an_array", "encoded": "{\"id\":1,\"status\":\"ok\",\"rows\":{}}", "error": "invalid_field_type" },
+    { "name": "unknown_status", "encoded": "{\"id\":1,\"status\":\"maybe\",\"rows\":[]}", "error": "unknown_status" },
+    { "name": "extra_protocol_field", "encoded": "{\"id\":1,\"status\":\"ok\",\"rows\":[],\"extra\":1}", "error": "undefined_field" },
+    { "name": "row_not_an_object", "encoded": "{\"id\":1,\"status\":\"ok\",\"rows\":[\"nope\"]}", "error": "row_not_an_object" }
+  ]
+}

@@ -1,0 +1,31 @@
+api_version: "1"
+plugin:
+  name: entity-lines
+  version: "1.0.0"
+  description: Extract capitalised entities and the line numbers they appear on
+runtime:
+  type: python
+  command: ["python3", "worker.py"]
+  selftest: true
+input:
+  extensions: [".txt", ".md"]
+  follow_symlinks: false
+output:
+  format: records
+  schema:
+    filename:
+      type: string
+      required: true
+      description: Path of the source file
+    line:
+      type: integer
+      required: true
+      description: 1-based line number the entity appeared on
+    entity:
+      type: string
+      required: true
+      description: The matched entity text
+execution:
+  workers: auto
+  timeout_seconds: 30
+  max_retries: 1

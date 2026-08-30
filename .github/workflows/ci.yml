@@ -1,0 +1,173 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  rust:
+    name: Rust (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      # Fixture plugins are plain-stdlib Python workers, so the Rust suite
+      # needs an interpreter but not the SDK.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Formatting
+        run: cargo fmt --all -- --check
+
+      - name: Lints
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Tests
+        run: cargo test --workspace --all-features
+
+      - name: Documentation builds without warnings
+        run: cargo doc --workspace --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+  rust-coverage:
+    name: Rust coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: taiki-e/install-action@cargo-llvm-cov
+
+      # The gate is the workspace floor from the implementation plan. Per-crate
+      # targets are reported in the summary for review rather than enforced
+      # separately, because a single floor is what actually prevents regression.
+      - name: Coverage
+        run: |
+          cargo llvm-cov --workspace --fail-under-lines 85 \
+            --lcov --output-path lcov.info
+          cargo llvm-cov report --summary-only >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-coverage
+          path: lcov.info
+
+  python:
+    name: Python (${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: python -m pip install -e "python[dev]"
+
+      - name: Lints
+        run: |
+          ruff check python/
+          ruff format --check python/
+
+      - name: Types
+        run: mypy python/src/crawl_plugin_sdk
+
+      # The coverage floor lives in pyproject.toml (fail_under = 95).
+      - name: Tests and coverage
+        run: pytest python/tests --cov=crawl_plugin_sdk --cov-report=term --cov-report=xml
+
+      - name: Upload coverage
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-coverage
+          path: coverage.xml
+
+  contract:
+    name: Cross-language protocol contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -e "python[dev]"
+
+      # Both halves read tests/fixtures/protocol/cases.json. Running them in
+      # one job makes a divergence a single obvious failure.
+      - name: Rust side
+        run: cargo test -p crawl-protocol --test contract
+      - name: Python side
+        run: pytest python/tests/test_contract.py -q
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "mkdocs-material>=9.5"
+      - name: Build site
+        run: mkdocs build --strict
+
+  nfr:
+    name: Bounded-memory verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # NFR-001 / NFR-021: peak RSS must not scale with the file count.
+      - name: Memory scaling
+        run: cargo test -p crawl-cli --test memory --release -- --ignored --nocapture
+
+  benchmarks:
+    name: Benchmarks compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # Timings are machine-dependent, so CI proves the benches still build and
+      # run rather than asserting on numbers a shared runner cannot reproduce.
+      - name: Smoke-run benchmarks
+        run: |
+          cargo bench -p crawl-domain --bench schema -- --test
+          cargo bench -p crawl-protocol --bench protocol -- --test

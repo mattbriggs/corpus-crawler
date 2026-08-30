@@ -1,0 +1,17 @@
+[package]
+name = "crawl-application"
+description = "Use cases, ports, and the crawl coordinator"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+crawl-domain.workspace = true
+crawl-protocol.workspace = true
+async-trait.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true

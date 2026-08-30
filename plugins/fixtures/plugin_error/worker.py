@@ -1,0 +1,31 @@
+"""Fixture worker: declares a processing failure for files containing 'fail'."""
+import json, sys
+
+def send(obj):
+    sys.stdout.write(json.dumps(obj, separators=(",", ":")) + "\n")
+    sys.stdout.flush()
+
+def rows_for(path):
+    out = []
+    with open(path, encoding="utf-8") as handle:
+        for number, line in enumerate(handle, start=1):
+            out.append({"filename": path, "line": number, "text": line.rstrip("\n")})
+    return out
+
+for raw in sys.stdin:
+    raw = raw.strip()
+    if not raw:
+        continue
+    request = json.loads(raw)
+    op = request.get("op", "process")
+    if op == "shutdown":
+        break
+    if op == "handshake":
+        send({"id": request["id"], "status": "ready", "api_version": "1"})
+        continue
+    path = request["filepath"]
+    if "fail" in path:
+        send({"id": request["id"], "status": "error",
+              "error": {"code": "unsupported_content", "message": "this fixture refuses this file"}})
+        continue
+    send({"id": request["id"], "status": "ok", "rows": rows_for(path)})

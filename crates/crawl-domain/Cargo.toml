@@ -1,0 +1,29 @@
+[package]
+name = "crawl-domain"
+description = "Pure domain model for the crawl file-processing runtime"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+bench = false
+
+[dependencies]
+indexmap.workspace = true
+serde.workspace = true
+serde_yaml.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+uuid.workspace = true
+
+[[bench]]
+name = "schema"
+harness = false

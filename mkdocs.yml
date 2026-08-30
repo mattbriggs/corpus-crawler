@@ -1,0 +1,37 @@
+site_name: crawl
+site_description: A modular high-throughput file-processing runtime
+repo_url: https://github.com/mattbriggs/corpus-crawler
+docs_dir: docs
+site_dir: site
+theme:
+  name: material
+  features: [navigation.sections, content.code.copy, navigation.top]
+markdown_extensions:
+  - admonition
+  - tables
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Architecture:
+      - Context: architecture/context.md
+      - Components: architecture/components.md
+      - Failure model: architecture/failure-model.md
+  - Plugin authoring:
+      - Overview: plugin-authoring/index.md
+      - Build your first plugin: plugin-authoring/tutorial.md
+      - Developing a plugin: plugin-authoring/developing.md
+      - Manifest reference: plugin-authoring/manifest.md
+      - Protocol reference: plugin-authoring/protocol.md
+  - Operations: operations.md
+  - Implementation status: implementation-status.md
+  - Decisions:
+      - ADR 0001 Process boundary: adr/0001-process-boundary.md
+      - ADR 0002 JSONL protocol: adr/0002-jsonl-protocol.md
+      - ADR 0003 Streaming output: adr/0003-streaming-output.md
+      - ADR 0004 Open questions: adr/0004-open-question-decisions.md
+      - ADR 0005 Schema types: adr/0005-schema-type-system.md
